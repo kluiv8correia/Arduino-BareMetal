@@ -1,0 +1,16 @@
+SOURCE_NAME = main
+PORT = /dev/ttyACM0
+./build/$(SOURCE_NAME).obj: $(SOURCE_NAME).asm | build
+	@avra $(SOURCE_NAME).asm && mv $(SOURCE_NAME).obj $(SOURCE_NAME).eep.hex $(SOURCE_NAME).hex ./build	
+
+build:
+	@echo "Creating a build file to hold all compilation objects..."
+	@mkdir build
+
+upload: ./build/$(SOURCE_NAME).obj
+	@echo "UPLOADING to BOARD..."
+	@avrdude -F -V -c arduino -p ATMEGA328P -P $(PORT) -b 115200 -U flash:w:./build/$(SOURCE_NAME).hex	
+
+clean:
+	@echo "Deleting BUILDFILE..."
+	@rm -rf build

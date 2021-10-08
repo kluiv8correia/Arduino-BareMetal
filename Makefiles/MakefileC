@@ -1,0 +1,22 @@
+SOURCE_NAME = main
+PORT = /dev/ttyACM0
+./build/$(SOURCE_NAME).o: $(SOURCE_NAME).c | build
+	@echo "Compiling to OBJECT code..."
+	@avr-gcc -Os -DF_CPU=16000000UL -mmcu=atmega328p -c -o ./build/$(SOURCE_NAME).o $(SOURCE_NAME).c
+	@echo "Linking to an EXECUTABLE..."
+	@avr-gcc -mmcu=atmega328p ./build/$(SOURCE_NAME).o -o ./build/$(SOURCE_NAME)
+	@echo "Converting to HEX file..."
+	@avr-objcopy -O ihex -R .eeprom ./build/$(SOURCE_NAME) ./build/$(SOURCE_NAME).hex
+	@avr-size ./build/$(SOURCE_NAME).hex | sed '2q;d' | awk '{printf "Program Size: %s BYTES\n", $$2}'
+
+build:
+	@echo "Creating a build file to hold all compilation objects..."
+	@mkdir build
+
+upload: ./build/$(SOURCE_NAME).o
+	@echo "UPLOADING to BOARD..."
+	@avrdude -F -V -c arduino -p ATMEGA328P -P $(PORT) -b 115200 -U flash:w:./build/$(SOURCE_NAME).hex	
+
+clean:
+	@echo "Deleting BUILDFILE..."
+	@rm -rf build
